@@ -124,6 +124,12 @@ if (!function_exists('ldap_validate_error')) {
 /**
  * Build the AD bind name from the configured format.
  *
+ * downlevel -> DOMAIN\username (the domain is prefixed to the username)
+ * upn       -> username@domain
+ *
+ * A username typed as user@domain is converted to DOMAIN\user when
+ * bind_format=downlevel. An explicit DOMAIN\user is left untouched.
+ *
  * @param string $username
  * @param string $domain
  * @param string $format downlevel|upn
@@ -135,10 +141,22 @@ function auth_ldap_bind_name($username, $domain, $format)
     if ($username === '') {
         return '';
     }
-    if ($domain === '' || strpos($username, '\\') !== false || strpos($username, '@') !== false) {
+    if ($domain === '') {
         return $username;
     }
-    return strtolower((string) $format) === 'upn'
+    if (strpos($username, '\\') !== false) {
+        return $username;
+    }
+
+    $format = strtolower((string) $format);
+    if (strpos($username, '@') !== false) {
+        if ($format === 'upn') {
+            return $username;
+        }
+        $username = substr($username, 0, strpos($username, '@'));
+    }
+
+    return $format === 'upn'
         ? $username . '@' . $domain
         : $domain . '\\' . $username;
 }

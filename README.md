@@ -172,8 +172,10 @@ AD settings (`auth.ldap`):
 | `use_tls` | `false` | StartTLS on 389 |
 | `timeout` | `5` | LDAP connection timeout |
 
-`ldap_validate()` in `lib/auth.php` performs the bind. A valid AD account that
-is not in the static list is refused.
+`ldap_validate()` in `lib/auth.php` performs the bind. With
+`bind_format=downlevel`, a bare username (or a typed `user@domain`) is sent as
+`DOMAIN\username`; with `upn` it is sent as `username@domain`. A valid AD account
+that is not in the static list is refused.
 
 Sessions use an HttpOnly/SameSite cookie, CSRF tokens for login and writes, and
 a default lifetime of 8 hours (`session_ttl`).
