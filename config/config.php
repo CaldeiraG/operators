@@ -67,11 +67,11 @@ return [
     'auth' => [
         'ldap' => [
             // Use ldap://host with StartTLS, or ldaps://host on port 636.
-            'host'        => getenv('AD_LDAP_HOST') ?: '',
+            'host'        => getenv('AD_LDAP_HOST') ?: 'ad.hanonsystems',
             'port'        => (int) (getenv('AD_LDAP_PORT') ?: 389),
             // NetBIOS name for downlevel (DOMAIN\user) or DNS suffix for UPN.
-            'domain'      => getenv('AD_DOMAIN') ?: '',
-            'bind_format' => getenv('AD_BIND_FORMAT') ?: 'downlevel',
+            'domain'      => getenv('AD_DOMAIN') ?: '@hanonsystems',
+            'bind_format' => getenv('AD_BIND_FORMAT') ?: 'DOMAIN',
             'use_tls'     => (getenv('AD_LDAP_TLS') ?: 'false') === 'true',
             'timeout'     => (int) (getenv('AD_LDAP_TIMEOUT') ?: 5),
         ],
