@@ -890,11 +890,7 @@
     }
 
     function shiftText(def) {
-        var text = def.label || def.key;
-        if (def.start && def.end) {
-            text += ' (' + def.start + ' - ' + def.end + ')';
-        }
-        return text;
+        return def.label || def.key;
     }
 
     function getInitials(name) {
