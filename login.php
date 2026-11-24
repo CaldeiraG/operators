@@ -13,7 +13,7 @@ auth_start_session();
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
-$next = auth_safe_next(isset($_POST['next']) ? $_POST['next'] : (isset($_GET['next']) ? $_GET['next'] : 'operadores_admin.php'));
+$next = auth_safe_next(isset($_POST['next']) ? $_POST['next'] : (isset($_GET['next']) ? $_GET['next'] : 'admin.php'));
 $username = '';
 $error = '';
 $sessionOk = session_status() === PHP_SESSION_ACTIVE;

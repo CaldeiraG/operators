@@ -3,7 +3,7 @@
 Standalone operator board and management app, split out of graphProd.
 
 - **Board:** `operadores.php` — photos, names and areas for the shift in progress.
-- **Management:** `operadores_admin.php` - add/remove operators and update photos (AD login required).
+- **Management:** `admin.php` - add/remove operators and update photos (AD login required).
 - **Login:** `login.php` — Windows AD / LDAP validation.
 - **Entry point:** `index.php` redirects to the board.
 
@@ -25,7 +25,7 @@ php -S localhost:8080
 Open:
 
 - `http://localhost:8080/operadores.php` — public board
-- `http://localhost:8080/operadores_admin.php` — redirects to the login page
+- `http://localhost:8080/admin.php` — redirects to the login page
 - `http://localhost:8080/login.php` — AD login
 
 In `config/config.local.php`, set at least:
@@ -54,7 +54,7 @@ In `config/config.local.php`, set at least:
 
 ```text
 ├── operadores.php              public shift board
-├── operadores_admin.php        add/remove operators + photos (login required)
+├── admin.php        add/remove operators + photos (login required)
 ├── login.php / logout.php      AD session login
 ├── api/
 │   ├── operadores.php          list + create + delete + photo update BFF

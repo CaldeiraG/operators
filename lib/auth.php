@@ -448,28 +448,28 @@ function auth_validate_csrf($token)
 function auth_safe_next($next)
 {
     if (is_array($next) || is_object($next)) {
-        return 'operadores_admin.php';
+        return 'admin.php';
     }
     $next = trim((string) $next);
     if ($next === '') {
-        return 'operadores_admin.php';
+        return 'admin.php';
     }
     if (preg_match('#^[a-z][a-z0-9+.-]*:#i', $next)) {
-        return 'operadores_admin.php';
+        return 'admin.php';
     }
     if (strpos($next, '//') === 0
         || strpos($next, '\\') !== false
         || strpos($next, "\n") !== false
         || strpos($next, "\r") !== false) {
-        return 'operadores_admin.php';
+        return 'admin.php';
     }
 
     $parts = parse_url($next);
     if ($parts === false || isset($parts['scheme']) || isset($parts['host'])) {
-        return 'operadores_admin.php';
+        return 'admin.php';
     }
     if (preg_match('#(^|/)(login|logout)\.php#i', $next)) {
-        return 'operadores_admin.php';
+        return 'admin.php';
     }
 
     return $next;
@@ -480,7 +480,7 @@ function auth_current_url()
 {
     $uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
     if ($uri === '' || $uri[0] !== '/') {
-        $uri = '/operadores_admin.php';
+        $uri = '/admin.php';
     }
     return auth_safe_next($uri);
 }

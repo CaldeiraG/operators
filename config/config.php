@@ -38,7 +38,7 @@ return [
         'fallback_to_file' => (getenv('OPERADORES_API_FALLBACK') ?: 'true') !== 'false',
         'file'             => $root . '/operadores_response.json',
 
-        // Writes (operadores_admin.php).
+        // Writes (admin.php).
         // create_path empty -> reuse `path`; delete_path empty -> `path/{id}`.
         'write_enabled'    => (getenv('OPERADORES_API_WRITE') ?: 'true') !== 'false',
         'create_method'    => getenv('OPERADORES_API_CREATE_METHOD') ?: 'POST',
@@ -68,7 +68,7 @@ return [
         'fallback_file'   => $root . '/areas_response.json',
     ],
 
-    // Login for operadores_admin.php + operator writes.
+    // Login for admin.php + operator writes.
     'auth' => [
         'ldap' => [
             // Use ldap://host with StartTLS, or ldaps://host on port 636.

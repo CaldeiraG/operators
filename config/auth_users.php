@@ -10,7 +10,7 @@
  *   'jdoe@domain.local'
  *
  * Accounts not listed here can still authenticate against AD, but cannot open
- * operadores_admin.php or call its write endpoints.
+ * admin.php or call its write endpoints.
  *
  * You can also append users from the AUTH_USERS environment variable
  * (comma-separated) without editing this file.

@@ -1,5 +1,5 @@
 /*
- * Operator management (operadores_admin.php).
+ * Operator management (admin.php).
  *
  * Lists operators, creates them with POST and removes them with DELETE. The
  * BFF (api/operadores.php) proxies the writes to the configured upstream.

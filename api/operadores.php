@@ -47,9 +47,9 @@ if (!in_array($mode, ['auto', 'remote', 'mock'], true)) {
 
 // The public BFF surface is:
 //   GET         -> list (operadores.php)
-//   POST        -> create (operadores_admin.php)
-//   PATCH/PUT   -> replace photo (operadores_admin.php)
-//   DELETE      -> remove (operadores_admin.php)
+//   POST        -> create (admin.php)
+//   PATCH/PUT   -> replace photo (admin.php)
+//   DELETE      -> remove (admin.php)
 // The upstream methods/paths are configurable under `operadores_api`.
 $httpMethod = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string) $_SERVER['REQUEST_METHOD']) : 'GET';
 if (in_array($httpMethod, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
@@ -656,7 +656,7 @@ function operadores_shift_meta(): array
 }
 
 // ---------------------------------------------------------------------------
-// Writes (operadores_admin.php)
+// Writes (admin.php)
 // ---------------------------------------------------------------------------
 
 /**
