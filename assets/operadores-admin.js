@@ -20,8 +20,12 @@
         reloadAfterLoad: false,
         submitting: false,
         removing: false,
+        photoUploading: false,
+        photoTarget: null,
         search: '',
-        shift: 'all'
+        shift: 'all',
+        areaNames: {},
+        areaIds: {}
     };
 
     var alertTimer = null;
@@ -64,6 +68,18 @@
         if (refresh) {
             refresh.onclick = function () {
                 load(true);
+            };
+        }
+
+        var photoInput = byId('photoFileInput');
+        if (photoInput) {
+            photoInput.onchange = function () {
+                var file = photoInput.files && photoInput.files[0];
+                var target = state.photoTarget;
+                photoInput.value = '';
+                if (file && target) {
+                    updatePhoto(target, file);
+                }
             };
         }
 
@@ -246,6 +262,8 @@
             }
 
             var areas = data && data.areas ? data.areas : (Array.isArray(data) ? data : []);
+            var names = {};
+            var ids = {};
             var placeholder = document.createElement('option');
             placeholder.value = '';
             placeholder.text = 'Selecione uma área';
@@ -260,19 +278,30 @@
                     continue;
                 }
                 var option = document.createElement('option');
-                option.value = name;
+                option.value = area.id !== null && typeof area.id !== 'undefined' && area.id !== ''
+                    ? String(area.id)
+                    : name;
                 option.text = name;
-                if (area.id) {
+                if (area.id !== null && typeof area.id !== 'undefined' && area.id !== '') {
                     option.setAttribute('data-area-id', area.id);
+                    names[String(area.id)] = name;
+                    ids[String(area.id)] = String(area.id);
+                    ids[name] = String(area.id);
                 }
+                names[name] = name;
                 select.appendChild(option);
             }
 
+            state.areaNames = names;
+            state.areaIds = ids;
             select.disabled = select.options.length <= 1;
             if (select.options.length <= 1) {
                 setAreaError('Não existem áreas disponíveis.');
             } else {
                 clearAreaError();
+            }
+            if (state.data) {
+                renderTable();
             }
         });
     }
@@ -362,6 +391,61 @@
         });
     }
 
+    function changePhoto(op) {
+        if (!op.id || state.photoUploading) {
+            return;
+        }
+        state.photoTarget = op;
+        var input = byId('photoFileInput');
+        if (input) {
+            input.value = '';
+            input.click();
+        }
+    }
+
+    function updatePhoto(op, file) {
+        if (!op.id || state.photoUploading) {
+            return;
+        }
+        if (file.type && file.type.indexOf('image/') !== 0) {
+            showAlert('O ficheiro selecionado não é uma imagem.', 'danger', 5000);
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            showAlert('A imagem excede 2 MB.', 'danger', 5000);
+            return;
+        }
+
+        state.photoUploading = true;
+        showAlert('A atualizar a fotografia de ' + op.name + '...', 'info', 0);
+
+        readFile(file, function (err, dataUrl) {
+            if (err) {
+                state.photoUploading = false;
+                showAlert('Não foi possível ler a imagem: ' + err, 'danger', 0);
+                return;
+            }
+
+            var payload = { id: op.id, image: dataUrl };
+            var area = areaId(op.area);
+            if (area) {
+                payload.area = area;
+            }
+
+            apiRequest('PATCH', 'operadores.php', {}, payload, function (uploadErr) {
+                state.photoUploading = false;
+
+                if (uploadErr) {
+                    showAlert('Não foi possível atualizar a fotografia de ' + op.name + ': ' + uploadErr, 'danger', 0);
+                    return;
+                }
+
+                showAlert('Fotografia atualizada: ' + op.name, 'success', 5000);
+                load(true);
+            });
+        });
+    }
+
     function removeOperator(op, button) {
         if (state.removing || !op.id) {
             return;
@@ -377,6 +461,10 @@
         }
 
         var params = { id: op.id };
+        var area = areaId(op.area);
+        if (area) {
+            params.area = area;
+        }
 
         apiRequest('DELETE', 'operadores.php', params, null, function (err, data) {
             state.removing = false;
@@ -465,6 +553,7 @@
                 var haystack = [
                     op.name || '',
                     op.area || '',
+                    areaLabel(op.area),
                     op.line || '',
                     op.role || '',
                     op.id || ''
@@ -502,6 +591,25 @@
 
     function buildRow(op) {
         var tr = document.createElement('tr');
+        tr.className = 'admin-operator-row';
+
+        if (op.id) {
+            tr.ondragover = function (event) {
+                event.preventDefault();
+                tr.classList.add('is-dragover');
+            };
+            tr.ondragleave = function () {
+                tr.classList.remove('is-dragover');
+            };
+            tr.ondrop = function (event) {
+                event.preventDefault();
+                tr.classList.remove('is-dragover');
+                var file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+                if (file) {
+                    updatePhoto(op, file);
+                }
+            };
+        }
 
         var photoCell = document.createElement('td');
         photoCell.style.width = '52px';
@@ -520,12 +628,21 @@
         shiftCell.appendChild(badge);
         tr.appendChild(shiftCell);
 
-        tr.appendChild(textCell(op.area));
+        tr.appendChild(textCell(areaLabel(op.area)));
 
         var actionCell = document.createElement('td');
         actionCell.className = 'text-right';
 
         if (op.id) {
+            var photoButton = document.createElement('button');
+            photoButton.type = 'button';
+            photoButton.className = 'btn btn-sm btn-outline-secondary mr-1';
+            photoButton.appendChild(document.createTextNode('Alterar foto'));
+            photoButton.onclick = function () {
+                changePhoto(op);
+            };
+            actionCell.appendChild(photoButton);
+
             var button = document.createElement('button');
             button.type = 'button';
             button.className = 'btn btn-sm btn-outline-danger';
@@ -746,6 +863,22 @@
             }
         }
         return null;
+    }
+
+    function areaLabel(value) {
+        if (value === null || typeof value === 'undefined' || value === '') {
+            return '';
+        }
+        var key = String(value);
+        return state.areaNames[key] || key;
+    }
+
+    function areaId(value) {
+        if (value === null || typeof value === 'undefined' || value === '') {
+            return '';
+        }
+        var key = String(value);
+        return state.areaIds[key] || key;
     }
 
     function shiftLabel(key) {

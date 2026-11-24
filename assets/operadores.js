@@ -26,6 +26,7 @@
         filter: initialFilter(),
         followCurrent: !query.shift || query.shift === 'current' || query.shift === 'all',
         search: '',
+        areaNames: {},
         loading: false,
         needsReload: false,
         shiftRefreshPending: false,
@@ -56,6 +57,7 @@
     }
 
     bindEvents();
+    loadAreas();
     load(true);
 
     setInterval(tick, 1000);
@@ -193,6 +195,34 @@
         };
 
         xhr.send();
+    }
+
+    function loadAreas() {
+        apiGet('areas', {}, function (err, data) {
+            if (err || !data) {
+                return;
+            }
+
+            var areas = data.areas || (Array.isArray(data) ? data : []);
+            var names = {};
+            for (var i = 0; i < areas.length; i++) {
+                var area = areas[i] || {};
+                var id = area.id !== null && typeof area.id !== 'undefined' ? String(area.id) : '';
+                var name = trim(area.name || area.nome || '');
+                if (!name) {
+                    continue;
+                }
+                if (id) {
+                    names[id] = name;
+                }
+                names[name] = name;
+            }
+
+            state.areaNames = names;
+            if (state.data) {
+                renderOperators();
+            }
+        });
     }
 
     function load(force) {
@@ -502,7 +532,7 @@
 
         var metaParts = [];
         if (op.area) {
-            metaParts.push(op.area);
+            metaParts.push(areaLabel(op.area));
         } else {
             if (op.line) {
                 metaParts.push(op.line);
@@ -711,6 +741,7 @@
             var haystack = [
                 op.name || '',
                 op.area || '',
+                areaLabel(op.area),
                 op.line || '',
                 op.role || '',
                 op.id || ''
@@ -746,6 +777,19 @@
             return query.shift;
         }
         return 'current';
+    }
+
+    function areaLabel(value) {
+        if (value === null || typeof value === 'undefined' || value === '') {
+            return '';
+        }
+        var key = String(value);
+        return state.areaNames[key] || key;
+    }
+
+    function trim(value) {
+        return String(value === null || typeof value === 'undefined' ? '' : value)
+            .replace(/^\s+|\s+$/g, '');
     }
 
     function getInitials(name) {

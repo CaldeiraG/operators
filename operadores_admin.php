@@ -125,6 +125,10 @@ $assetVer = function ($rel) {
 
                     <div id="adminError" class="alert alert-danger" style="display:none;"></div>
 
+                    <div class="admin-photo-hint text-muted small mb-2">
+                        Arraste uma imagem para uma linha para substituir a fotografia, ou use <strong>Alterar foto</strong>.
+                    </div>
+
                     <div class="table-responsive">
                         <table class="table table-sm admin-table mb-0">
                             <thead>
@@ -153,6 +157,8 @@ $assetVer = function ($rel) {
     </div>
 
 </div>
+
+<input type="file" id="photoFileInput" accept="image/*" style="display:none;">
 
 <script>
     window.OperadoresAdminConfig = {

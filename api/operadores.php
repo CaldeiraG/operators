@@ -46,9 +46,10 @@ if (!in_array($mode, ['auto', 'remote', 'mock'], true)) {
 }
 
 // The public BFF surface is:
-//   GET    -> list (operadores.php)
-//   POST   -> create (operadores_admin.php)
-//   DELETE -> remove (operadores_admin.php)
+//   GET         -> list (operadores.php)
+//   POST        -> create (operadores_admin.php)
+//   PATCH/PUT   -> replace photo (operadores_admin.php)
+//   DELETE      -> remove (operadores_admin.php)
 // The upstream methods/paths are configurable under `operadores_api`.
 $httpMethod = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string) $_SERVER['REQUEST_METHOD']) : 'GET';
 if (in_array($httpMethod, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
@@ -684,6 +685,10 @@ function operadores_handle_write(string $method, array $cfg, string $mode): void
         operadores_delete($cfg, $body);
         return;
     }
+    if ($method === 'PUT' || $method === 'PATCH') {
+        operadores_update_image($cfg, $body);
+        return;
+    }
 
     operadores_create($cfg, $body);
 }
@@ -711,7 +716,7 @@ function operadores_request_body(): array
     if (isset($_GET) && is_array($_GET)) {
         foreach ([
             'id', 'name', 'nome', 'shift', 'turno', 'image', 'imagem',
-            'line', 'linha', 'role', 'funcao',
+            'area', 'area_id', 'line', 'linha', 'role', 'funcao',
         ] as $key) {
             if (isset($_GET[$key]) && !isset($body[$key])) {
                 $body[$key] = $_GET[$key];
@@ -748,7 +753,7 @@ function operadores_create(array $cfg, array $body): void
     $payload = [
         'name'  => $row['name'],
         'shift' => $row['shift'],
-        'area'  => $row['area'],
+        'area'  => operadores_area_value($row['area']),
     ];
 
     // Keep the image exactly as submitted (URL, data URI or base64) instead
@@ -822,24 +827,43 @@ function operadores_delete(array $cfg, array $body): void
         json_error('Missing operator id.', 422);
     }
 
+    $area = '';
+    foreach (['area', 'area_id'] as $key) {
+        if (isset($body[$key]) && is_scalar($body[$key])) {
+            $area = trim((string) $body[$key]);
+            break;
+        }
+    }
+
     $path = trim((string) ($cfg['delete_path'] ?? ''));
     if ($path === '') {
         $path = rtrim((string) ($cfg['path'] ?? 'operators'), '/') . '/{id}';
     }
-    $hasPlaceholder = strpos($path, '{id}') !== false;
+    $hasIdPlaceholder = strpos($path, '{id}') !== false;
+    $hasAreaPlaceholder = strpos($path, '{area}') !== false;
+    if ($hasAreaPlaceholder && $area === '') {
+        json_error('Missing operator area.', 422);
+    }
     $path = str_replace('{id}', rawurlencode($id), $path);
+    $path = str_replace('{area}', rawurlencode($area), $path);
     $url = operadores_api_url($cfg, $path);
     $method = strtoupper((string) ($cfg['delete_method'] ?? 'DELETE'));
 
     $query = [];
     $payload = null;
     if ($method === 'DELETE' || $method === 'GET') {
-        if (!$hasPlaceholder) {
+        if (!$hasIdPlaceholder) {
             $query['id'] = $id;
         }
+        if (!$hasAreaPlaceholder && $area !== '') {
+            $query['area'] = $area;
+        }
     } else {
-        // Action-style APIs (e.g. POST operators/delete) get the id in JSON.
+        // Action-style APIs (e.g. POST operators/delete) get the ids in JSON.
         $payload = ['id' => $id];
+        if ($area !== '') {
+            $payload['area'] = operadores_area_value($area);
+        }
     }
 
     $res = operadores_upstream_write($cfg, $method, $url, $payload, $query);
@@ -852,8 +876,101 @@ function operadores_delete(array $cfg, array $body): void
     json_response([
         'ok'       => true,
         'id'       => $id,
+        'area'     => $area,
         'upstream' => operadores_upstream_summary($res),
     ]);
+}
+
+/**
+ * Replace the photo of an existing operator.
+ *
+ * @param array<string,mixed> $cfg
+ * @param array<string,mixed> $body
+ * @return void
+ */
+function operadores_update_image(array $cfg, array $body): void
+{
+    $id = '';
+    foreach (['id', 'employee_id', 'employee_number', 'operator_id', 'ssno'] as $key) {
+        if (isset($body[$key]) && is_scalar($body[$key])) {
+            $id = trim((string) $body[$key]);
+            break;
+        }
+    }
+    if ($id === '') {
+        json_error('Missing operator id.', 422);
+    }
+
+    $rawImage = operadores_pick($body, [
+        'image', 'imagem', 'photo', 'foto', 'picture', 'avatar', 'img',
+        'image_url', 'photo_url', 'foto_url', 'image_path',
+    ]);
+    $image = is_scalar($rawImage) ? trim((string) $rawImage) : '';
+    if ($image === '') {
+        json_error('An image is required.', 422);
+    }
+    if (strlen($image) > 4 * 1024 * 1024) {
+        json_error('Image is too large.', 413);
+    }
+
+    $area = '';
+    foreach (['area', 'area_id'] as $key) {
+        if (isset($body[$key]) && is_scalar($body[$key])) {
+            $area = trim((string) $body[$key]);
+            break;
+        }
+    }
+
+    $path = trim((string) ($cfg['update_path'] ?? ''));
+    if ($path === '') {
+        $path = rtrim((string) ($cfg['path'] ?? 'operators'), '/') . '/{id}';
+    }
+    $hasIdPlaceholder = strpos($path, '{id}') !== false;
+    $hasAreaPlaceholder = strpos($path, '{area}') !== false;
+    if ($hasAreaPlaceholder && $area === '') {
+        json_error('Missing operator area.', 422);
+    }
+    $path = str_replace('{id}', rawurlencode($id), $path);
+    $path = str_replace('{area}', rawurlencode($area), $path);
+    $url = operadores_api_url($cfg, $path);
+    $method = strtoupper((string) ($cfg['update_method'] ?? 'PUT'));
+
+    $query = [];
+    $payload = ['image' => $image];
+    if ($method === 'GET' || $method === 'DELETE') {
+        if (!$hasIdPlaceholder) {
+            $query['id'] = $id;
+        }
+    } else {
+        if (!$hasIdPlaceholder) {
+            $payload['id'] = $id;
+        }
+    }
+
+    $res = operadores_upstream_write($cfg, $method, $url, $payload, $query);
+    if (empty($res['ok'])) {
+        json_error(operadores_upstream_error($res, 'update'), operadores_upstream_status($res));
+    }
+
+    operadores_bump_cache_version($cfg);
+
+    json_response([
+        'ok'       => true,
+        'id'       => $id,
+        'area'     => $area,
+        'image'    => $image,
+        'upstream' => operadores_upstream_summary($res),
+    ]);
+}
+
+/** Numeric area ids stay numbers in the upstream JSON. */
+function operadores_area_value($area)
+{
+    if (!is_scalar($area)) {
+        return '';
+    }
+    $value = trim((string) $area);
+    return ($value !== '' && ctype_digit($value)) ? (int) $value : $value;
 }
 
 /** Build an upstream URL from a configured path. */

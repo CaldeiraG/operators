@@ -45,6 +45,11 @@ return [
         'create_path'      => getenv('OPERADORES_API_CREATE_PATH') ?: '',
         'delete_method'    => getenv('OPERADORES_API_DELETE_METHOD') ?: 'DELETE',
         'delete_path'      => getenv('OPERADORES_API_DELETE_PATH') ?: '',
+
+        // Image update for an existing operator.
+        // update_path empty -> `path/{id}`; supports {id} and {area}.
+        'update_method'    => getenv('OPERADORES_API_UPDATE_METHOD') ?: 'PUT',
+        'update_path'      => getenv('OPERADORES_API_UPDATE_PATH') ?: '',
     ],
 
     // Areas for the management dropdown.

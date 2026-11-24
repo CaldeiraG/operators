@@ -3,7 +3,7 @@
 Standalone operator board and management app, split out of graphProd.
 
 - **Board:** `operadores.php` — photos, names and areas for the shift in progress.
-- **Management:** `operadores_admin.php` — add/remove operators (AD login required).
+- **Management:** `operadores_admin.php` - add/remove operators and update photos (AD login required).
 - **Login:** `login.php` — Windows AD / LDAP validation.
 - **Entry point:** `index.php` redirects to the board.
 
@@ -54,10 +54,10 @@ In `config/config.local.php`, set at least:
 
 ```text
 ├── operadores.php              public shift board
-├── operadores_admin.php        add/remove operators (login required)
+├── operadores_admin.php        add/remove operators + photos (login required)
 ├── login.php / logout.php      AD session login
 ├── api/
-│   ├── operadores.php          list + create + delete BFF
+│   ├── operadores.php          list + create + delete + photo update BFF
 │   ├── areas.php               areas for the dropdown
 │   └── _helpers.php            JSON/config/cache/clock helpers
 ├── assets/
@@ -88,7 +88,8 @@ Default routes:
 | --- | --- | --- |
 | List | `GET api/operadores.php` | `GET {operadores_api.base_url}/{path}` |
 | Create | `POST api/operadores.php` | `POST {operadores_api.base_url}/{path}` |
-| Delete | `DELETE api/operadores.php?id={id}` | `DELETE {operadores_api.base_url}/{path}/{id}` |
+| Update photo | `PATCH api/operadores.php` | `PUT {operadores_api.base_url}/{path}/{id}` |
+| Delete | `DELETE api/operadores.php?id={id}&area={area}` | `DELETE {operadores_api.base_url}/{path}/{id}` |
 
 List rows may look like:
 
@@ -99,7 +100,7 @@ List rows may look like:
     "name": "Ana Silva",
     "image": "/photos/operators/ana.jpg",
     "shift": "1T",
-    "area": "GEN5 Brackets"
+    "area": 1
   }
 ]
 ```
@@ -110,13 +111,17 @@ Create body sent to the upstream API:
 {
   "name": "Ana Silva",
   "shift": "1T",
-  "area": "GEN5 Brackets",
+  "area": 1,
   "image": "data:image/jpeg;base64,..."
 }
 ```
 
-`line` and `role` are not sent by the management page. `image` is omitted when
-no photo is selected.
+`area` is the numeric **area id** selected in the dropdown (the dropdown shows
+the area name, but sends its id). `line` and `role` are not sent by the
+management page. `image` is omitted when no photo is selected.
+
+Deleting an operator sends the operator `id` **and** its `area` id. If the
+delete route needs them in the URL, use `{id}` and/or `{area}` in `delete_path`.
 
 Writes can be routed elsewhere in `config.local.php`:
 
@@ -126,15 +131,20 @@ Writes can be routed elsewhere in `config.local.php`:
     'create_path'   => 'operators/insert',
     'delete_method' => 'POST',
     'delete_path'   => 'operators/delete',
+    'update_method' => 'PUT',
+    'update_path'   => 'operators/{id}',
 ],
 ```
 
-The delete id is then sent in the JSON body.
+The delete/update ids are then sent in the JSON body when the path has no
+placeholder. Photo updates send `{ "image": ... }`; `id` is added when
+`update_path` has no `{id}` and `{area}` is substituted when present.
 
 ## Images
 
-The management form accepts a local image file (up to 2 MB). The browser sends
-it as a data URI. The operator API should:
+New operators and existing rows both accept images (up to 2 MB). In the table,
+use **Alterar foto** or drag an image file onto the row. The browser sends the
+image as a data URI. The operator API should:
 
 1. Strip the `data:image/...;base64,` prefix.
 2. Validate and resize the image.

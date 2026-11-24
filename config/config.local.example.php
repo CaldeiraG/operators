@@ -30,6 +30,9 @@ return [
         'path'     => 'operators',
         // Prefix for relative photo paths, e.g. 'http://<host>/photos'.
         'image_base_url' => '',
+        // Image update for existing operators (default: PUT operators/{id}).
+        'update_method' => 'PUT',
+        'update_path'   => '',
     ],
 
     'intranet_api' => [
