@@ -184,8 +184,9 @@ AD settings (`auth.ldap`):
 
 `ldap_validate()` in `lib/auth.php` performs the bind. With
 `bind_format=downlevel`, a bare username (or a typed `user@domain`) is sent as
-`DOMAIN\username`; with `upn` it is sent as `username@domain`. A valid AD account
-that is not in the static list is refused.
+`DOMAIN\username`; with `upn` it is sent as `username@domain`. If `domain` starts
+with `@` (for example `@hanonsystems`), it is treated as a UPN suffix. A valid
+AD account that is not in the static list is refused.
 
 Sessions use an HttpOnly/SameSite cookie, CSRF tokens for login and writes, and
 a default lifetime of 8 hours (`session_ttl`).

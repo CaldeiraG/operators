@@ -144,6 +144,12 @@ function auth_ldap_bind_name($username, $domain, $format)
     if ($domain === '') {
         return $username;
     }
+
+    // A domain written as "@suffix" is a UPN suffix.
+    if ($domain[0] === '@') {
+        return auth_normalize_username($username) . $domain;
+    }
+
     if (strpos($username, '\\') !== false) {
         return $username;
     }
