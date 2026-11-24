@@ -98,10 +98,10 @@ $csrfEsc = htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8');
             <input type="hidden" name="next" value="<?php echo $nextEsc; ?>">
 
             <div class="form-group">
-                <label for="username">Utilizador</label>
+                <label for="username">CDSID</label>
                 <input type="text" class="form-control" id="username" name="username"
                        value="<?php echo $usernameEsc; ?>" autocomplete="username"
-                       placeholder="DOMINIO\utilizador ou utilizador@dominio" required autofocus>
+                       placeholder="CDSID" required autofocus>
             </div>
 
             <div class="form-group">

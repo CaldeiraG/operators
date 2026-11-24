@@ -66,9 +66,9 @@ $assetVer = function ($rel) {
                         <div class="form-group">
                             <label for="opShift">Turno <span class="text-danger">*</span></label>
                             <select id="opShift" class="form-control" required>
-                                <option value="4T">4º Turno (01:00 - 07:59)</option>
-                                <option value="1T" selected>1º Turno (08:00 - 16:29)</option>
-                                <option value="2T">2º Turno (16:30 - 00:59)</option>
+                                <option value="4T">4º Turno</option>
+                                <option value="1T" selected>1º Turno</option>
+                                <option value="2T">2º Turno</option>
                             </select>
                         </div>
 
@@ -86,7 +86,7 @@ $assetVer = function ($rel) {
                             <div class="admin-photo-preview" id="photoPreview" style="display:none;">
                                 <img alt="Pré-visualização" id="photoPreviewImg">
                             </div>
-                            <small class="form-text text-muted">Máximo 2 MB. A imagem é enviada como data URI; a API deve guardar o ficheiro e devolver o caminho/URL.</small>
+                            <small class="form-text text-muted">Máximo 2 MB</small>
                         </div>
 
                         <button type="submit" id="opSubmit" class="btn btn-success btn-block">Adicionar operador</button>
