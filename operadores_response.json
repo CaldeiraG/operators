@@ -1,0 +1,72 @@
+[
+  {
+    "id": 101,
+    "name": "Bruno Costa",
+    "image": "https://i.pravatar.cc/400?img=12",
+    "shift": "4T",
+    "area": "GEN5 Brackets"
+  },
+  {
+    "id": 102,
+    "name": "Ines Ferreira",
+    "image": "https://i.pravatar.cc/400?img=47",
+    "shift": "4T",
+    "area": "GEN5 Brackets"
+  },
+  {
+    "id": 103,
+    "name": "Rui Marques",
+    "image": "",
+    "shift": "4T",
+    "area": "Daimler"
+  },
+  {
+    "id": 201,
+    "name": "Ana Silva",
+    "image": "https://i.pravatar.cc/400?img=32",
+    "shift": "1T",
+    "area": "GEN5 Brackets"
+  },
+  {
+    "id": 202,
+    "name": "Carlos Pereira",
+    "image": "https://i.pravatar.cc/400?img=15",
+    "shift": "1T",
+    "area": "Daimler"
+  },
+  {
+    "id": 203,
+    "name": "Marta Rodrigues",
+    "image": "https://i.pravatar.cc/400?img=45",
+    "shift": "1T",
+    "area": "GEN5 Brackets"
+  },
+  {
+    "id": 204,
+    "name": "Tiago Santos",
+    "image": "https://i.pravatar.cc/400?img=68",
+    "shift": "1T",
+    "area": "Daimler"
+  },
+  {
+    "id": 301,
+    "name": "Sofia Almeida",
+    "image": "https://i.pravatar.cc/400?img=25",
+    "shift": "2T",
+    "area": "GEN5 Brackets"
+  },
+  {
+    "id": 302,
+    "name": "Miguel Lopes",
+    "image": "https://i.pravatar.cc/400?img=11",
+    "shift": "2T",
+    "area": "Daimler"
+  },
+  {
+    "id": 303,
+    "name": "Joana Carvalho",
+    "image": "",
+    "shift": "2T",
+    "area": "GEN5 Brackets"
+  }
+]

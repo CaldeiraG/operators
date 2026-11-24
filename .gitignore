@@ -1,0 +1,13 @@
+# Local secrets & runtime artifacts
+config/config.local.php
+.env
+*.log
+
+# Runtime cache
+cache/*
+!cache/.gitkeep
+
+# OS / editors
+Thumbs.db
+.DS_Store
+.idea/

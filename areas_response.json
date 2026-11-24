@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "GEN5 Brackets",
+    "type": "FAssy",
+    "IsActive": 1
+  },
+  {
+    "id": 2,
+    "name": "Daimler",
+    "type": "FAssy",
+    "IsActive": 1
+  }
+]
